@@ -11,15 +11,14 @@ use noam148\imagemanager\Module;
 /**
  * ImageManagerSearch represents the model behind the search form about `common\modules\imagemanager\models\ImageManager`.
  */
-class ImageManagerSearch extends ImageManager
-{
-	public $globalSearch;
-	
+class ImageManagerSearch extends ImageManager {
+
+    public $globalSearch;
+
     /**
      * @inheritdoc
      */
-    public function rules()
-    {
+    public function rules() {
         return [
             [['globalSearch'], 'safe'],
         ];
@@ -28,8 +27,7 @@ class ImageManagerSearch extends ImageManager
     /**
      * @inheritdoc
      */
-    public function scenarios()
-    {
+    public function scenarios() {
         // bypass scenarios() implementation in the parent class
         return Model::scenarios();
     }
@@ -41,18 +39,17 @@ class ImageManagerSearch extends ImageManager
      *
      * @return ActiveDataProvider
      */
-    public function search($params)
-    {
+    public function search($params) {
         $query = ImageManager::find();
 
         // add conditions that should always apply here
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
-			'pagination' => [
-				'pagesize' => 100,
-			],
-			'sort'=> ['defaultOrder' => ['created'=>SORT_DESC]]
+            'pagination' => [
+                'pagesize' => 100,
+            ],
+            'sort' => ['defaultOrder' => ['created' => SORT_DESC]]
         ]);
 
         $this->load($params);
@@ -69,11 +66,14 @@ class ImageManagerSearch extends ImageManager
         if ($module->setBlameableBehavior) {
             $query->andWhere(['createdBy' => Yii::$app->user->id]);
         }
-
-        $query->orFilterWhere(['like', 'fileName', $this->globalSearch])
-            ->orFilterWhere(['like', 'created', $this->globalSearch])
-			->orFilterWhere(['like', 'modified', $this->globalSearch]);
-
+        if ($module->searchByNameOnly) {
+            $query->orFilterWhere(['like', 'fileName', $this->globalSearch]);
+        } else {
+            $query->orFilterWhere(['like', 'fileName', $this->globalSearch])
+                    ->orFilterWhere(['like', 'created', $this->globalSearch])
+                    ->orFilterWhere(['like', 'modified', $this->globalSearch]);
+        }
         return $dataProvider;
     }
+
 }
